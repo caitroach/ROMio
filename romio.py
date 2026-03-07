@@ -20,6 +20,8 @@ import urllib.request
 import os
 from collections import deque
 
+# runs locally! Tell a friend!! 
+
 try:
     import pyrealsense2 as rs
     REALSENSE_AVAILABLE = True
@@ -53,7 +55,7 @@ PALETTE = {
     "neutral":     "#3d7fff",
 }
 
-# MediaPipe new Tasks API landmark indices 
+# places landmarks according to the guide at https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker
 class LANDMARK:
     LEFT_SHOULDER  = 11
     RIGHT_SHOULDER = 12
@@ -66,11 +68,11 @@ class LANDMARK:
 
 MODEL_PATH = os.path.expanduser("~/.cache/mediapipe/pose_landmarker_heavy.task")
 
-def ensure_model():
+def ensure_model(): # grabs model if we don't already have it. thank you linux we say in unison. openpose hates us 
     if os.path.exists(MODEL_PATH):
         return
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    url = ("https://storage.googleapis.com/mediapipe-models/pose_landmarker/"
+    url = ("https://storage.googleapis.com/mediapipe-models/pose_landmarker/" #straight up APIing it. and by API let's just say...... it's a link
            "pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task")
     print(f"[INFO] Downloading pose model to {MODEL_PATH} …")
     urllib.request.urlretrieve(url, MODEL_PATH)
@@ -85,7 +87,7 @@ POSE_CONNECTIONS = [
     (27,29),(28,30),(29,31),(30,32),(27,31),(28,32),
 ]
 
-# Angle smoothing window to reduce jitters 
+# Angle smoothing window to reduce jittering blaaaahh can be adjusted as needed
 SMOOTH_N = 8
 
 # Angle thresholds for color coding ! 
@@ -93,7 +95,7 @@ THRESH_WARNING = 45
 THRESH_DANGER  = 90
 
 
-# math
+# math that i dont fully understand if im being so fr 
 
 def vec3(a, b):
     #sets a vector from a to b 
@@ -115,7 +117,7 @@ def signed_angle(v1, v2, axis):
     return sign * angle_between(v1, v2)
 
 def get_landmark_3d(landmarks, idx, depth_frame=None, w=1, h=1):
-    # extract coords from landmark
+    # extract coords from landmarks that were set earlier, grabs body coords basically
     lm = landmarks[idx]
     x_world = lm.x
     y_world = lm.y
@@ -146,7 +148,7 @@ def compute_shoulder_angles(landmarks, depth_frame=None, w=1, h=1):
     """
     lm = landmarks
 
-    # Key landmarks
+    # grabs landmarks
     L_SHOULDER = get_landmark_3d(lm, LANDMARK.LEFT_SHOULDER, depth_frame, w, h)
     R_SHOULDER = get_landmark_3d(lm, LANDMARK.RIGHT_SHOULDER, depth_frame, w, h)
     L_ELBOW    = get_landmark_3d(lm, LANDMARK.LEFT_ELBOW,    depth_frame, w, h)
@@ -156,12 +158,12 @@ def compute_shoulder_angles(landmarks, depth_frame=None, w=1, h=1):
     L_HIP      = get_landmark_3d(lm, LANDMARK.LEFT_HIP,      depth_frame, w, h)
     R_HIP      = get_landmark_3d(lm, LANDMARK.RIGHT_HIP,     depth_frame, w, h)
 
-    # Body reference frame
+    # places vectors for directions
     spine    = vec3(((L_HIP+R_HIP)/2), ((L_SHOULDER+R_SHOULDER)/2))  # up
     lateral  = vec3(R_SHOULDER, L_SHOULDER)                            # left to right
     anterior = np.cross(lateral, spine)                                 # forward
 
-    # Normalize
+    # normalizeeeeeee
     spine    = spine    / (np.linalg.norm(spine)    + 1e-9)
     lateral  = lateral  / (np.linalg.norm(lateral)  + 1e-9)
     anterior = anterior / (np.linalg.norm(anterior) + 1e-9)
@@ -176,7 +178,7 @@ def compute_shoulder_angles(landmarks, depth_frame=None, w=1, h=1):
         forearm   = vec3(elbow, wrist)
 
         # anterior (forward) rotation 
-        # Project upper arm onto the coronal plane (lateral × spine)
+        # Project upper arm onto the coronal plane (lateral times spine)
         # and measure how far it deviates forward/backward.
         ua_norm = upper_arm / (np.linalg.norm(upper_arm) + 1e-9)
         ant_angle = math.degrees(math.asin(np.clip(np.dot(ua_norm, anterior), -1, 1)))
