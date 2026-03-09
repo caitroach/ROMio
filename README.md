@@ -19,7 +19,7 @@ Team lead: Cait Roach
 Design team: Hargun Kour, Basma Azeem, Augustine Osezua, Gavin Tan, Leif Hill, Nicholas Irons, Tharunika Gnaneshan
 
 ## acknowledgements 
-Thank you to Dr. Harding at the University of Alberta for all your help throughout this project!
+Thank you to Dr. Harding at the University of Alberta for all your help throughout this project! Special thanks to Augustine Osezua and Basma Azeem for their contributions to the project and demo.
 
 we used a lot of the math and code from these repos/studies, so please check them out too: 
 - https://arxiv.org/pdf/2310.07322 
