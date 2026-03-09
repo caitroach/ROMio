@@ -4,6 +4,8 @@ In our 2026 QMIND Healthcare project, we used an Intel RealSense D435 camera wit
 
 We are using this camera in combination with MediaPipe's pretrained models to compute real-time angles of rotation in a subject's shoulders, exploring the feasibility of such a system in orthopedic ROM assessment. This is a work in progress!
 
+ROMio = range of motion input/output :3
+
 ## how it works 
 We're using MediaPipe PoseLandmarker to run a neural net on each video frame to detect 33 body landmarks, which are normalized as (x, y, z) coordinates. The x and y coordinates are scaled from 0 to 1. The z coordinate is a rough estimate using the webcam until the Intel RealSense depth camera is activated. Then the program replaces that z coordinate with the true measured depth in meters from the IR depth sensor, which is highly accurate. 
 
